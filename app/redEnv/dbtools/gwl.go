@@ -18,10 +18,10 @@ func GwlGet(uid int) (int, []Env, error){
 	//缓存未命中
 	if err != nil {
 		var recs []Record
-		usr := User{Id: uid}
-		rs := Db.Order("stime").Where("uid = ?", uid).Select("id", "val", "stime", "opened").Find(&recs)
+		usr := User{}
+		rs := Db.Where("id = ?", uid).Select("money").Find(&usr)
 		if rs.RowsAffected != 0 {
-			Db.Where("id = ?", uid).Select("money").Find(&usr)
+			Db.Order("stime").Where("uid = ?", uid).Select("id", "val", "stime", "opened").Find(&recs)
 			money = usr.Money
 			for _, rec := range recs {
 				envs = append(envs, Env{
@@ -31,7 +31,6 @@ func GwlGet(uid int) (int, []Env, error){
 					Stime:  rec.Stime,
 				})
 			}
-
 			return money, envs, nil
 		} else {
 			return money, envs, err
