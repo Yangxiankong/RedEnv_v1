@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/DeanThompson/ginpprof v0.0.0-20201112072838-007b1e56b2e1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect

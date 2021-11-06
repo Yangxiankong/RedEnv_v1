@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/DeanThompson/ginpprof"
 	"github.com/gin-gonic/gin"
 	"math/rand"
 	"redEnv_v1/app/redEnv/dbtools"
@@ -17,13 +18,17 @@ func main() {
 
 	//通过数据库中EID最大的红包初始化当前红包的eid
 	var rec dbtools.Record
-	dbtools.Db.Last(&rec)
-	handler.CurrEid = rec.Id
+	rs := dbtools.Db.Last(&rec)
+	if rs.RowsAffected != 0 {
+		handler.CurrEid = rec.Id
+	}
 
 	r := gin.Default()
 
 	//路由
 	initRouter(r)
+
+	ginpprof.Wrap(r)
 
 	r.Run(fmt.Sprintf(":%v", port))
 }
