@@ -18,7 +18,7 @@ func main() {
 
 	//通过数据库中EID最大的红包初始化当前红包的eid
 	var rec dbtools.Record
-	rs := dbtools.Db.Last(&rec)
+	rs := dbtools.Db4Gwl.Last(&rec)
 	if rs.RowsAffected != 0 {
 		handler.CurrEid = rec.Id
 	}

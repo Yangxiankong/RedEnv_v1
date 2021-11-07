@@ -3,6 +3,7 @@ package dbtools
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
+	"strconv"
 )
 
 func MqSnatch(uid int, eid int, val int, stime int64, N int) {
@@ -57,7 +58,7 @@ func MqOpen(uid, eid, val int) {
 func MqSaveToCache(uid int) {
 	msg := &sarama.ProducerMessage{
 		Topic: "cache",
-		Value: sarama.StringEncoder(uid),
+		Value: sarama.ByteEncoder(strconv.Itoa(uid)),
 	}
 
 	mq4Cache.Input() <- msg
