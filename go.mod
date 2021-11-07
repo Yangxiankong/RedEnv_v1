@@ -3,17 +3,16 @@ module redEnv_v1
 go 1.17
 
 require (
-	github.com/garyburd/redigo v1.6.2
+	github.com/DeanThompson/ginpprof v0.0.0-20201112072838-007b1e56b2e1
+	github.com/Shopify/sarama v1.30.0
+	github.com/garyburd/redigo v1.6.3
 	github.com/gin-gonic/gin v1.7.4
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.1.3
-	gorm.io/gorm v1.21.12
+	gorm.io/gorm v1.22.2
 )
 
 require (
-	github.com/DeanThompson/ginpprof v0.0.0-20201112072838-007b1e56b2e1 // indirect
-	github.com/Shopify/sarama v1.30.0 // indirect
-	github.com/bsm/sarama-cluster v2.1.15+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.2.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
