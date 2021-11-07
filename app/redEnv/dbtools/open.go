@@ -8,7 +8,7 @@ import (
 )
 
 // OpenGet 根据uid与eid查询是否有该红包 若有则返回opened, val
-func OpenGet(uid, eid int) (int, int, error){
+func OpenGet(uid, eid int) (int, int, error, bool) {
 	conn := RedisPool.Get()
 	defer conn.Close()
 	var opened int
@@ -31,28 +31,28 @@ func OpenGet(uid, eid int) (int, int, error){
 			}
 		}
 		if flag == false {
-			return opened, val, errors.New("no such envelope")
+			return opened, val, errors.New(""), true
 		} else {
-			return opened, val, nil
+			return opened, val, nil, true
 		}
 	} else {
 		var rec Record
-		rs := Db.Where("id = ?", eid).Select("opened", "val").Find(&rec)
+		rs := Db4Open.Where("id = ?", eid).Select("opened", "val").Find(&rec)
 		if rs.RowsAffected != 0 {
 			err = nil
 			opened = rec.Opened
 			val = rec.Val
-			go SaveToCache(uid, conn)
+			return rec.Opened, rec.Val, nil, false
 		}
+		return 0, 0, err, true
 	}
-	return opened, val, err
 }
 
 func OpenWrite(uid, eid, val int) {
 	conn := RedisPool.Get()
 	DelCache(uid, conn)
 
-	Db.Transaction(func(tx *gorm.DB) error {
+	Db4Open.Transaction(func(tx *gorm.DB) error {
 		rec := Record{Id: eid}
 		if err := tx.Where("id = ?", eid).Select("opened").Find(&rec).Error; err != nil {
 			return err

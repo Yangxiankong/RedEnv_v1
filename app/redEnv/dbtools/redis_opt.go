@@ -24,8 +24,8 @@ func QueryFromCache(uid int, conn redis.Conn) ([]Env, error) {
 func SaveToCache(uid int, conn redis.Conn) {
 	var usr User
 	var recs []Record
-	Db.Where("id = ?", uid).Find(&usr)
-	Db.Where("uid = ?", uid).Find(&recs)
+	Db4Gwl.Where("id = ?", uid).Find(&usr)
+	Db4Gwl.Where("uid = ?", uid).Find(&recs)
 	var envs []Env
 	for _, val := range recs {
 		envs = append(envs, Env{

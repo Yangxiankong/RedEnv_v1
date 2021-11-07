@@ -1,2 +1,2 @@
 port: 6379
-pool_size: 10
+pool_size: 50

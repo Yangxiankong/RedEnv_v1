@@ -12,12 +12,11 @@ import (
 	"time"
 )
 
-var N int	//用户最多抢几次
-var p float64	//获得红包的概率
-var lower int	//红包最低金额
-var upper int	//红包最高金额
-var CurrEid int	//当前红包eid
-
+var N int           //用户最多抢几次
+var p float64       //获得红包的概率
+var lower int       //红包最低金额
+var upper int       //红包最高金额
+var CurrEid int = 0 //当前红包eid
 
 func init() {
 	N, p, lower, upper = conftools.GetEnvConfig(fmt.Sprintf("%v%v", filepath.ConfRoot, filepath.EnvConf))
@@ -34,11 +33,11 @@ func SnatchHandler(c *gin.Context) {
 		return
 	}
 
-	cnt, err := dbtools.SnatchGet(jsin.Uid)
+	cnt, err, hit := dbtools.SnatchGet(jsin.Uid)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code": statuscode.NoSuchUser,
-			"msg": "No such user",
+			"msg":  "No such user",
 		})
 		return
 	}
@@ -46,8 +45,11 @@ func SnatchHandler(c *gin.Context) {
 	if cnt >= N {
 		c.JSON(http.StatusOK, gin.H{
 			"code": statuscode.TooManyEnv,
-			"msg": "The number of red envelopes reached the upper limit",
+			"msg":  "The number of red envelopes reached the upper limit",
 		})
+		if hit == false {
+			dbtools.MqSaveToCache(jsin.Uid)
+		}
 		return
 	}
 
@@ -56,23 +58,24 @@ func SnatchHandler(c *gin.Context) {
 	if flag == false {
 		c.JSON(http.StatusOK, gin.H{
 			"code": statuscode.Thankyou,
-			"msg": "只能说运气并不是恨好",
+			"msg":  "只能说运气并不是恨好",
 		})
+		dbtools.MqSaveToCache(jsin.Uid)
 		return
 	}
 
-	// 向数据库写入 后期改为向MQ发消息
-	go dbtools.SnatchWrite(jsin.Uid, eid, val, time.Now().Unix(), N)
-
 	c.JSON(http.StatusOK, gin.H{
 		"code": statuscode.OK,
-		"msg": "success",
+		"msg":  "success",
 		"data": gin.H{
-			"envelope_id": eid,   // 红包id
-			"max_count": N,     // 最多抢几次
-			"cur_count": cnt,      // 当前为第几次抢
+			"envelope_id": eid, // 红包id
+			"max_count":   N,   // 最多抢几次
+			"cur_count":   cnt, // 当前为第几次抢
 		},
 	})
+
+	//向数据库写入
+	dbtools.MqSnatch(jsin.Uid, eid, val, time.Now().Unix(), N)
 }
 
 func getEnv() (int, int, bool) {
@@ -82,5 +85,5 @@ func getEnv() (int, int, bool) {
 		return 0, 0, false
 	}
 	CurrEid++
-	return CurrEid, rand.Intn(upper - lower) + lower, true
+	return CurrEid, rand.Intn(upper-lower) + lower, true
 }

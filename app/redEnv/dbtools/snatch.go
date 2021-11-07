@@ -8,7 +8,7 @@ import (
 )
 
 // SnatchGet 通过uid查询用户已抢红包数量
-func SnatchGet(uid int) (int, error) {
+func SnatchGet(uid int) (int, error, bool) {
 	conn := RedisPool.Get()
 	defer conn.Close()
 
@@ -18,15 +18,16 @@ func SnatchGet(uid int) (int, error) {
 	//缓存未命中
 	if err != nil {
 		var usr User
-		rs := Db.Where("id = ?", uid).Select("cnt").Find(&usr)
+		rs := Db4Snatch.Where("id = ?", uid).Select("cnt").Find(&usr)
 		if rs.RowsAffected != 0 {
 			err = nil
 			cnt = usr.Cnt
 			//直接发到消息队列写入缓存 但是抢到的这一次写入多余了 后期简单优化即可
-			go SaveToCache(uid, conn)
+			return usr.Cnt, nil, false
 		}
+		return 0, err, false
 	}
-	return cnt, err
+	return cnt, err, true
 }
 
 // SnatchWrite 消息队列的消费者 更新mysql以及redis
@@ -38,7 +39,7 @@ func SnatchWrite(uid int, eid int, val int, stime int64, N int) {
 	DelCache(uid, conn)
 
 	//mysql写入 事务
-	Db.Transaction(func(tx *gorm.DB) error {
+	Db4Snatch.Transaction(func(tx *gorm.DB) error {
 		usr := User{
 			Id:    uid,
 			Money: 0,

@@ -6,7 +6,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-func GwlGet(uid int) (int, []Env, error){
+func GwlGet(uid int) (int, []Env, error) {
 	conn := RedisPool.Get()
 	defer conn.Close()
 
@@ -19,9 +19,9 @@ func GwlGet(uid int) (int, []Env, error){
 	if err != nil {
 		var recs []Record
 		usr := User{}
-		rs := Db.Where("id = ?", uid).Select("money").Find(&usr)
+		rs := Db4Gwl.Where("id = ?", uid).Select("money").Find(&usr)
 		if rs.RowsAffected != 0 {
-			Db.Order("stime").Where("uid = ?", uid).Select("id", "val", "stime", "opened").Find(&recs)
+			Db4Gwl.Order("stime").Where("uid = ?", uid).Select("id", "val", "stime", "opened").Find(&recs)
 			money = usr.Money
 			for _, rec := range recs {
 				envs = append(envs, Env{
@@ -31,6 +31,7 @@ func GwlGet(uid int) (int, []Env, error){
 					Stime:  rec.Stime,
 				})
 			}
+			MqSaveToCache(uid)
 			return money, envs, nil
 		} else {
 			return money, envs, err
@@ -38,7 +39,7 @@ func GwlGet(uid int) (int, []Env, error){
 	} else {
 		vb, err := redis.Bytes(conn.Do("HGet", uid, "envs"))
 		if err != nil {
-			fmt.Println("wtf?")
+			fmt.Println("缓存恰好失效，权当没有这个人吧")
 			return money, envs, err
 		}
 		json.Unmarshal(vb, &envs)
@@ -67,8 +68,8 @@ func quickSort(envs []Env, l int, r int) {
 		}
 		swap(envs, i, j)
 	}
-	quickSort(envs, l, i - 1)
-	quickSort(envs, i + 1, r)
+	quickSort(envs, l, i-1)
+	quickSort(envs, i+1, r)
 }
 
 func swap(envs []Env, i int, j int) {

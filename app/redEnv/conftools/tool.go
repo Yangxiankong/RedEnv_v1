@@ -8,32 +8,32 @@ import (
 )
 
 type MysqlConfig struct {
-	User string
+	User     string
 	Password string
-	Host string
-	Port string
-	Db string
-	Param string
+	Host     string
+	Port     string
+	Db       string
+	Param    string
 }
 
 type RedisConfig struct {
-	Host string `yaml:"host"`
-	Port string `yaml:"port"`
-	PoolSize int `yaml:"pool_size"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	PoolSize int    `yaml:"pool_size"`
 	Password string `yaml:"password"`
 }
 
 // GetMysqlConfig 通过yaml返回mysql配置信息
 func GetMysqlConfig(filepath string) MysqlConfig {
 	var conf MysqlConfig
-/*	file, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	err = yaml.Unmarshal(file, &conf)
-	if err != nil {
-		fmt.Println(err.Error())
-	}*/
+	/*	file, err := ioutil.ReadFile(filepath)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		err = yaml.Unmarshal(file, &conf)
+		if err != nil {
+			fmt.Println(err.Error())
+		}*/
 
 	conf.User = os.Getenv("MYSQL_USER")
 	conf.Password = os.Getenv("MYSQL_PASSWORD")
@@ -46,8 +46,8 @@ func GetMysqlConfig(filepath string) MysqlConfig {
 		fmt.Println(err.Error())
 	}
 	type MysqlYaml struct {
-		Port string `yaml:"port"`
-		Db string `yaml:"db"`
+		Port  string `yaml:"port"`
+		Db    string `yaml:"db"`
 		Param string `yaml:"param"`
 	}
 
@@ -75,8 +75,8 @@ func GetRedisConfig(filepath string) RedisConfig {
 	}
 
 	type RedisYaml struct {
-		Port string `yaml:"port"`
-		PoolSize int `yaml:"pool_size"`
+		Port     string `yaml:"port"`
+		PoolSize int    `yaml:"pool_size"`
 	}
 
 	var ymlConf RedisYaml
@@ -91,10 +91,10 @@ func GetRedisConfig(filepath string) RedisConfig {
 
 func GetEnvConfig(filepath string) (int, float64, int, int) {
 	type EnvConfig struct {
-		N int `yaml:"N"`
-		P float64 `yaml:"p"`
-		Lower int `yaml:"lower"`
-		Upper int `yaml:"upper"`
+		N     int     `yaml:"N"`
+		P     float64 `yaml:"p"`
+		Lower int     `yaml:"lower"`
+		Upper int     `yaml:"upper"`
 	}
 	var conf EnvConfig
 	file, err := ioutil.ReadFile(filepath)
@@ -106,4 +106,9 @@ func GetEnvConfig(filepath string) (int, float64, int, int) {
 		fmt.Println(err.Error())
 	}
 	return conf.N, conf.P, conf.Lower, conf.Upper
+}
+
+func GetMqAddr() string {
+	addr := os.Getenv("MQ_ADDR")
+	return addr
 }

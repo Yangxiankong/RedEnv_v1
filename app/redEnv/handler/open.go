@@ -17,12 +17,12 @@ func OpenHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
-	opened, val, err := dbtools.OpenGet(jsin.Uid, jsin.EnvelopeId)
+	opened, val, err, hit := dbtools.OpenGet(jsin.Uid, jsin.EnvelopeId)
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code": statuscode.NoThisEnv,
-			"msg": "This user doesnt have this red envelope",
+			"msg":  "This user doesnt have this red envelope",
 		})
 		return
 	}
@@ -30,18 +30,21 @@ func OpenHandler(c *gin.Context) {
 	if opened == 1 {
 		c.JSON(http.StatusOK, gin.H{
 			"code": statuscode.AlreadyOpened,
-			"msg": "this envelope has already been opened",
+			"msg":  "this envelope has already been opened",
 		})
+		if hit == false {
+			dbtools.MqSaveToCache(jsin.Uid)
+		}
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": statuscode.OK,
-		"msg": "success",
+		"msg":  "success",
 		"data": gin.H{
 			"value": val,
 		},
 	})
 
-	go dbtools.OpenWrite(jsin.Uid, jsin.EnvelopeId, val)
+	dbtools.MqOpen(jsin.Uid, jsin.EnvelopeId, val)
 }
